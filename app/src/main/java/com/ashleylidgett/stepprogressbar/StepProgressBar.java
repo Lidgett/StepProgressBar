@@ -21,11 +21,10 @@ public class StepProgressBar extends View
     private Paint mBasePaint;
     private Paint mCompletePaint;
     private Paint mCurrentPaint;
-    private Paint mOutlinePaint;
     private int mProgressPoints, mProgressPointsComplete;
     private TextPaint mTextPaint;
-    private float mTextCenter, mStartX, mEndX, mRadius;
-    private float mCurrentPointRadius;
+    private float mTextCenter, mRadius;
+    private int mMargin, mBarSize;
 
     public StepProgressBar(Context context, int progressPoints, int progressPointsComplete)
     {
@@ -39,19 +38,13 @@ public class StepProgressBar extends View
     {
         super(context, attrs);
         init();
-        TypedArray a = context.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.StepProgressBar,
-                0, 0);
-
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
+                R.styleable.StepProgressBar, 0, 0);
         try
         {
             mBasePaint.setColor(a.getInteger(R.styleable.StepProgressBar_background_color, Color.GRAY));
             mCompletePaint.setColor(a.getInteger(R.styleable.StepProgressBar_completed_point_color, Color.BLACK));
             mCurrentPaint.setColor(a.getInteger(R.styleable.StepProgressBar_current_point_color, Color.DKGRAY));
-
-//            mRadius = a.getFloat(R.styleable.AshProgressBar2_point_size, 30);
-
             mProgressPoints = a.getInteger(R.styleable.StepProgressBar_progress_points, 1);
             mProgressPointsComplete = a.getInteger(R.styleable.StepProgressBar_completed_progress_points, 0);
         }
@@ -64,7 +57,6 @@ public class StepProgressBar extends View
     public StepProgressBar(Context context, @Nullable AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-
         init();
     }
 
@@ -77,9 +69,8 @@ public class StepProgressBar extends View
     private void init()
     {
         mRadius = 30;
-        mCurrentPointRadius = 40;
-        mStartX = 0 + mRadius;
-        mEndX = getMeasuredWidth() - mRadius;
+        mMargin = 20;
+        mBarSize = 6;
 
         mBasePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBasePaint.setStyle(Paint.Style.FILL);
@@ -90,16 +81,12 @@ public class StepProgressBar extends View
         mCurrentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mCurrentPaint.setStyle(Paint.Style.FILL);
         mCurrentPaint.setColor(Color.BLUE);
-        mOutlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mOutlinePaint.setStyle(Paint.Style.STROKE);
-        mOutlinePaint.setStrokeWidth(5);
-        mOutlinePaint.setColor(Color.BLACK);
         mTextPaint = new TextPaint();
         mTextPaint.setColor(Color.WHITE);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.setTextSize(26);
         mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mTextCenter = mCurrentPointRadius - ((mTextPaint.descent() + mTextPaint.ascent()) / 2);
+        mTextCenter = mRadius - ((mTextPaint.descent() + mTextPaint.ascent()) / 2);
     }
 
     @Override
@@ -116,65 +103,41 @@ public class StepProgressBar extends View
         int width;
         int height;
 
-        //Measure Width
         if (widthMode == MeasureSpec.EXACTLY)
-        {
-            //Must be this size
             width = widthSize;
-        }
         else if (widthMode == MeasureSpec.AT_MOST)
-        {
-            //Can't be bigger than...
             width = Math.min(desiredWidth, widthSize);
-        }
         else
-        {
-            //Be whatever you want
             width = desiredWidth;
-        }
 
-        //Measure Height
         if (heightMode == MeasureSpec.EXACTLY)
-        {
-            //Must be this size
             height = heightSize;
-        }
         else if (heightMode == MeasureSpec.AT_MOST)
-        {
-            //Can't be bigger than...
             height = Math.min(desiredHeight, heightSize);
-        }
         else
-        {
-            //Be whatever you want
             height = desiredHeight;
-        }
 
-        //MUST CALL THIS
         setMeasuredDimension(width, height);
     }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
-        /**
-         * Draw all corresponding points depending on how many reading points there are
-         */
         float increment = getMeasuredWidth() / (mProgressPoints + 1);
-        drawRectangles(canvas, increment, mProgressPoints);
+        drawBars(canvas, increment, mProgressPoints);
         drawPoints(canvas, increment, (mProgressPoints));
     }
 
     public void setProgress(int progress)
     {
         this.mProgressPoints = progress;
-//        invalidate();
+        invalidate();
     }
 
     public void setProgressComplete(int progressComplete)
     {
         this.mProgressPointsComplete = progressComplete;
-//        invalidate();
+        invalidate();
     }
 
     public void setBackgroundColor(int color)
@@ -192,10 +155,10 @@ public class StepProgressBar extends View
         this.mCurrentPaint.setColor(color);
     }
 
-    private void drawRectangles(Canvas canvas, float increment, int amountOfPoints)
+    private void drawBars(Canvas canvas, float increment, int amountOfPoints)
     {
-        drawRect(canvas, 20, getMeasuredWidth() - 20, amountOfPoints);
-        drawRect(canvas, 20, increment, 0);
+        drawRect(canvas, mMargin, getMeasuredWidth() - mMargin, amountOfPoints);
+        drawRect(canvas, mMargin, increment, 0);
 
         for (int j = 1; j <= (amountOfPoints - 1); j++)
         {
@@ -205,7 +168,7 @@ public class StepProgressBar extends View
 
     private void drawRect(Canvas canvas, float start, float end, int value)
     {
-        canvas.drawRect(start, mCurrentPointRadius - 6, end, mCurrentPointRadius + 6,
+        canvas.drawRect(start, mRadius - mBarSize, end, mRadius + mBarSize,
                 mProgressPointsComplete >= value ? mCompletePaint : mBasePaint);
     }
 
@@ -221,11 +184,11 @@ public class StepProgressBar extends View
     {
         if (mProgressPointsComplete == value)
         {
-            canvas.drawCircle(x, mCurrentPointRadius, mRadius, mCurrentPaint);
+            canvas.drawCircle(x, mRadius, mRadius, mCurrentPaint);
         }
         else
         {
-            canvas.drawCircle(x, mCurrentPointRadius, mRadius, mProgressPointsComplete > value ? mCompletePaint : mBasePaint);
+            canvas.drawCircle(x, mRadius, mRadius, mProgressPointsComplete > value ? mCompletePaint : mBasePaint);
         }
         canvas.drawText(text, x, mTextCenter, mTextPaint);
     }
