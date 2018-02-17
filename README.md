@@ -6,6 +6,8 @@ This custom View provides a very stripped down solution by providing one flat Vi
 
 StepProgressBar/screenshot_1.png
 
+![Screenshot](screenshot_1.png)
+
 
 
 
