@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="StepProgressBar">
+        <attr name="background_color" format="integer" />
+        <attr name="completed_point_color" format="integer" />
+        <attr name="current_point_color" format="integer" />
+        <attr name="progress_points" format="integer" />
+        <attr name="completed_progress_points" format="integer" />
+    </declare-styleable>
+</resources>
